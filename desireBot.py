@@ -28,8 +28,10 @@ from glob import glob
 from pprint import pprint
 from random import choice
 from random import random
+import re
 from time import time
 from twython import Twython
+from urllib2 import quote
 
 
 import os.path
@@ -52,7 +54,7 @@ kDefaultConfigDict = {
 }
 
 
-
+rtPat = re.compile(r"\bRT\s")
 
 
 class DesireBot(object):
@@ -67,7 +69,7 @@ class DesireBot(object):
       # we may need to pass to the update_status function as we exit, most 
       # probably 'in_reply-to_status_id' when we're replying to someone.)
       self.tweets = []
-      self.retweetIds = []
+      self.retweets = []
 
       self.settings = Settings(self.GetPath("desireBot.json"), kDefaultConfigDict)
       s = self.settings
@@ -118,6 +120,27 @@ class DesireBot(object):
          else:
             self.twitter.update_status(**msg)
 
+      for rt in self.retweets:
+         if self.debug:
+            print "{0}: {1}".format(rt['id'], rt['text'][:60].encode("UTF-8"))
+         else:
+            self.twitter.retweet(id=rt['id'])
+
+
+   def Search(self, searchString):
+      ''' return a bunch of tweets that contain the search string, and are NOT retweets. '''
+      results = self.twitter.search(q=quote(searchString), src="typd")
+      tweets = results['statuses']
+      retval = []
+      for tweet in tweets:
+         text = tweet['text']
+         tweetId = tweet['id']
+         # ignore manual retweets
+         if not rtPat.search(text):
+            retval.append({"id" : tweetId, "text" : text})
+
+      return retval
+
 
    def CreateUpdate(self):
       '''
@@ -160,10 +183,14 @@ class DesireBot(object):
             doUpdate = True
 
       if doUpdate or self.force:
-         # !!!
-         self.settings.lastUpdate = int(time())
-         # we'll log album name, track name, number of lines, number of characters
-         self.Log("Tweet", [])
+         iWant = self.Search('"All I want is"')
+         youWant = self.Search('"All you want is"')
+         if iWant and youWant:
+            self.retweets.append(choice(iWant))      
+            self.retweets.append(choice(youWant))      
+            self.settings.lastUpdate = int(time())
+            # we'll log album name, track name, number of lines, number of characters
+            self.Log("Retweet", [str(self.retweets[0]['id']), str(self.retweets[1]['id'])])
 
 
 
