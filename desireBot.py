@@ -187,8 +187,8 @@ class DesireBot(object):
          iWant = self.Search('"All I {0}"'.format(desire))
          youWant = self.Search('"All you {0}"'.format(desire))
          if iWant and youWant:
-            self.retweets.append(choice(iWant))      
             self.retweets.append(choice(youWant))      
+            self.retweets.append(choice(iWant))      
             self.settings.lastUpdate = int(time())
             # we'll log album name, track name, number of lines, number of characters
             self.Log("Retweet", [str(self.retweets[0]['id']), str(self.retweets[1]['id'])])
