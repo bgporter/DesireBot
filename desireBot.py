@@ -183,8 +183,9 @@ class DesireBot(object):
             doUpdate = True
 
       if doUpdate or self.force:
-         iWant = self.Search('"All I want is"')
-         youWant = self.Search('"All you want is"')
+         desire = choice(["need", "want", "desire"])
+         iWant = self.Search('"All I {0}"'.format(desire))
+         youWant = self.Search('"All you {0}"'.format(desire))
          if iWant and youWant:
             self.retweets.append(choice(iWant))      
             self.retweets.append(choice(youWant))      
