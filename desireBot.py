@@ -136,7 +136,7 @@ class DesireBot(object):
          text = tweet['text']
          tweetId = tweet['id']
          # ignore manual retweets
-         if not rtPat.search(text):
+         if (not rtPat.search(text)) and ("magick" not in text.lower()):
             retval.append({"id" : tweetId, "text" : text})
 
       return retval
